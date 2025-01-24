@@ -7,8 +7,10 @@ const TaskList = ({
   selectedTask,
   onTaskSelect,
 }) => {
+  const [activeTab, setActiveTab] = useState("all");
   const [playingTask, setPlayingTask] = useState(null);
   const [audio, setAudio] = useState(null);
+  const [audioCurrentTime, setAudioCurrentTime] = useState(0); // موقعیت فعلی صدا
 
   const handlePlayPauseAudio = (task) => {
     if (task.remainingTime === 0) {
@@ -17,16 +19,22 @@ const TaskList = ({
     }
 
     if (playingTask === task.createdAt) {
+      // اگر در حال پخش است، صدا را متوقف کرده و موقعیت ذخیره می‌کنیم
       audio.pause();
+      setAudioCurrentTime(audio.currentTime);
       setPlayingTask(null);
     } else {
-      if (audio) audio.pause(); // توقف فایل صوتی قبلی
+      if (audio) audio.pause(); // توقف صدای قبلی
       const audioURL = URL.createObjectURL(task.audioFile);
       const newAudio = new Audio(audioURL);
+      newAudio.currentTime = audioCurrentTime; // شروع از موقعیت ذخیره‌شده
       setAudio(newAudio);
       setPlayingTask(task.createdAt);
       newAudio.play();
-      newAudio.onended = () => setPlayingTask(null); // پایان پخش
+      newAudio.onended = () => {
+        setPlayingTask(null);
+        setAudioCurrentTime(0); // بازنشانی موقعیت پس از پایان
+      };
     }
   };
 
@@ -42,17 +50,64 @@ const TaskList = ({
     onTaskSelect(task.createdAt);
   };
 
+  const handleStatusChange = (task) => {
+    task.isCompleted = !task.isCompleted;
+  };
+
+  const filteredTasks = tasks.filter((task) => {
+    if (activeTab === "all") return true;
+    if (activeTab === "expired") return task.remainingTime === 0;
+    if (activeTab === "active") return task.remainingTime > 0;
+    return true;
+  });
+
+  // رفع مشکل undefined برای remainingTime
+  tasks.forEach((task) => {
+    if (typeof task.remainingTime === "undefined") {
+      task.remainingTime = task.maxTime; // مقداردهی اولیه به زمان باقی‌مانده
+    }
+  });
+
   return (
-    <div className="p-4 border rounded shadow-md bg-white">
-      <h2 className="text-lg font-bold mb-4">Task List</h2>
-      {tasks.length === 0 ? (
-        <p>No tasks available. Add a task to get started!</p>
+    <div className="p-6 border rounded shadow-md bg-white">
+      <h2 className="text-2xl font-bold mb-4">Task List</h2>
+
+      {/* Tabs */}
+      <div className="flex space-x-4 mb-4">
+        <button
+          onClick={() => setActiveTab("all")}
+          className={`px-4 py-2 rounded ${
+            activeTab === "all" ? "bg-blue-500 text-white" : "bg-gray-200"
+          }`}
+        >
+          All Tasks
+        </button>
+        <button
+          onClick={() => setActiveTab("expired")}
+          className={`px-4 py-2 rounded ${
+            activeTab === "expired" ? "bg-red-500 text-white" : "bg-gray-200"
+          }`}
+        >
+          Expired Tasks
+        </button>
+        <button
+          onClick={() => setActiveTab("active")}
+          className={`px-4 py-2 rounded ${
+            activeTab === "active" ? "bg-green-500 text-white" : "bg-gray-200"
+          }`}
+        >
+          Active Tasks
+        </button>
+      </div>
+
+      {/* Task List */}
+      {filteredTasks.length === 0 ? (
+        <p>No tasks available in this category.</p>
       ) : (
         <ul className="space-y-4">
-          {tasks.map((task) => {
+          {filteredTasks.map((task) => {
             const isSelected = selectedTask === task.createdAt;
             const isExpired = task.remainingTime === 0;
-
             return (
               <li
                 key={task.createdAt}
@@ -81,9 +136,24 @@ const TaskList = ({
                         ? "Expired"
                         : `Time Remaining: ${task.remainingTime} minutes`}
                     </p>
-                    <p className="text-sm text-gray-600">
-                      Status: {task.isCompleted ? "Completed" : "Pending"}
-                    </p>
+                    <div className="flex items-center mt-2">
+                      <input
+                        type="checkbox"
+                        checked={task.isCompleted}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          handleStatusChange(task);
+                        }}
+                        className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-400"
+                        disabled={isExpired} // غیر فعال کردن برای تسک‌های منقضی شده
+                      />
+                      <label
+                        className="ml-2 text-sm text-gray-700"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {task.isCompleted ? "Completed" : "Pending"}
+                      </label>
+                    </div>
                     {task.audioFile ? (
                       <button
                         onClick={(e) => {
@@ -93,12 +163,14 @@ const TaskList = ({
                         className={`text-blue-500 hover:text-blue-700 mt-2 ${
                           isExpired ? "cursor-not-allowed text-gray-400" : ""
                         }`}
-                        disabled={isExpired}
+                        disabled={isExpired} // غیر فعال کردن برای تسک‌های منقضی شده
                       >
-                        {playingTask === task.createdAt ? "⏸ Pause" : "▶ Play"}
+                        {playingTask === task.createdAt ? "⏸ Pause" : "▶️ Play"}
                       </button>
                     ) : (
-                      <p className="text-sm text-gray-500">No Audio File</p>
+                      <p className="text-sm text-gray-500 mt-2">
+                        No Audio File
+                      </p>
                     )}
                   </div>
                   <div className="flex items-center space-x-4">
@@ -110,9 +182,9 @@ const TaskList = ({
                       className={`text-yellow-500 hover:text-yellow-700 ${
                         isExpired ? "cursor-not-allowed text-gray-400" : ""
                       }`}
-                      disabled={isExpired}
+                      disabled={isExpired} // غیر فعال کردن برای تسک‌های منقضی شده
                     >
-                      ✏ Edit
+                      ✏️ Edit
                     </button>
                     <button
                       onClick={(e) => {

@@ -13,7 +13,7 @@ const TaskForm = ({ addOrEditTask, editingTask, cancelEdit }) => {
       setMaxTime(editingTask.maxTime);
       setAudioFile(editingTask.audioFile || null);
     } else {
-setSubject("");
+      setSubject("");
       setDescription("");
       setMaxTime("");
       setAudioFile(null);
@@ -36,11 +36,14 @@ setSubject("");
     setSubject("");
     setDescription("");
     setMaxTime("");
-    setAudioFile(null);
+    setAudioFile(null); // Clear audio file after submission
   };
 
   return (
-    <form className="p-4 border rounded shadow-md bg-white" onSubmit={handleSubmit}>
+    <form
+      className="p-4 border rounded shadow-md bg-white"
+      onSubmit={handleSubmit}
+    >
       <h2 className="text-lg font-bold mb-4">
         {editingTask ? "Edit Task" : "Add New Task"}
       </h2>
@@ -63,7 +66,9 @@ setSubject("");
         />
       </div>
       <div className="mb-4">
-        <label className="block text-sm font-medium mb-2">Max Time (in minutes)</label>
+        <label className="block text-sm font-medium mb-2">
+          Max Time (in minutes)
+        </label>
         <input
           type="number"
           className="w-full p-2 border rounded"
@@ -73,7 +78,9 @@ setSubject("");
         />
       </div>
       <div className="mb-4">
-        <label className="block text-sm font-medium mb-2">Attach Audio File</label>
+        <label className="block text-sm font-medium mb-2">
+          Attach Audio File
+        </label>
         <input
           type="file"
           accept="audio/*"
@@ -83,19 +90,18 @@ setSubject("");
       <div className="flex items-center space-x-4">
         <button
           type="submit"
-          className={`${
-            editingTask ? "bg-yellow-500" : "bg-blue-500"
-          } text-white px-4 py-2 rounded hover:${
-            editingTask ? "bg-yellow-600" : "bg-blue-600"
-          }`}
+          className={`relative inline-flex items-center justify-center font-semibold px-4 py-2  text-white bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg shadow-lg group hover:bg-gradient-to-r hover:from-purple-700 to-blue-700`}
         >
-          {editingTask ? "Edit Task" : "Add Task"}
+          <span className="absolute inset-0 transition-transform duration-300 rounded-lg bg-gradient-to-r from-purple-700 to-blue-700 group-hover:scale-100 group-hover:opacity-90"></span>
+          <span className="relative z-10">
+            {editingTask ? "Edit Task" : "Add Task"}
+          </span>
         </button>
         {editingTask && (
           <button
             type="button"
             onClick={handleCancelEdit}
-            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+            className=" inset-0 transition-transform duration-300 scale-95 rounded-lg bg-gradient-to-r from-gray-700 to-orange-400 text-white px-4 py-2 rounded hover:bg-gray-600"
           >
             Cancel
           </button>

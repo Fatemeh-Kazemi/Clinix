@@ -15,9 +15,14 @@ const App = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       const updatedTasks = tasks.map((task) => {
-        const elapsedMinutes = Math.floor((Date.now() - task.createdAt) / 60000);
+        const elapsedMinutes = Math.floor(
+          (Date.now() - task.createdAt) / 60000
+        );
         const remainingTime = task.maxTime - elapsedMinutes;
-        return { ...task, remainingTime: remainingTime > 0 ? remainingTime : 0 };
+        return {
+          ...task,
+          remainingTime: remainingTime > 0 ? remainingTime : 0,
+        };
       });
       setTasks(updatedTasks);
       saveToLocalStorage(updatedTasks);
@@ -39,7 +44,12 @@ const App = () => {
       saveToLocalStorage(updatedTasks);
       setEditingTask(null);
     } else {
-      const newTask = { ...task, createdAt: Date.now(), isPlaying: false, isCompleted: false };
+      const newTask = {
+        ...task,
+        createdAt: Date.now(),
+        isPlaying: false,
+        isCompleted: false,
+      };
       const updatedTasks = [...tasks, newTask];
       setTasks(updatedTasks);
       saveToLocalStorage(updatedTasks);
@@ -67,7 +77,7 @@ const App = () => {
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center p-4">
       <h1 className="text-2xl font-bold mb-4">ToDo List</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-6xl">
         <TaskForm
           addOrEditTask={handleAddOrEditTask}
           editingTask={editingTask}
