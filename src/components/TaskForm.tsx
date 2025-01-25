@@ -1,16 +1,35 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, FormEvent, ChangeEvent } from "react";
 
-const TaskForm = ({ addOrEditTask, editingTask, cancelEdit }) => {
-  const [subject, setSubject] = useState("");
-  const [description, setDescription] = useState("");
-  const [maxTime, setMaxTime] = useState("");
-  const [audioFile, setAudioFile] = useState(null);
+
+interface Task {
+  subject: string;
+  description: string;
+  maxTime: number;
+  audioFile: File | null;
+}
+
+
+interface TaskFormProps {
+  addOrEditTask: (task: Task) => void;
+  editingTask: Task | null;
+  cancelEdit: () => void;
+}
+
+const TaskForm: React.FC<TaskFormProps> = ({
+  addOrEditTask,
+  editingTask,
+  cancelEdit,
+}) => {
+  const [subject, setSubject] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
+  const [maxTime, setMaxTime] = useState<string>("");
+  const [audioFile, setAudioFile] = useState<File | null>(null);
 
   useEffect(() => {
     if (editingTask) {
       setSubject(editingTask.subject);
       setDescription(editingTask.description);
-      setMaxTime(editingTask.maxTime);
+      setMaxTime(editingTask.maxTime.toString());
       setAudioFile(editingTask.audioFile || null);
     } else {
       setSubject("");
@@ -28,10 +47,18 @@ const TaskForm = ({ addOrEditTask, editingTask, cancelEdit }) => {
     cancelEdit();
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!subject || !maxTime) return alert("Please fill all required fields!");
-    const task = { subject, description, maxTime, audioFile };
+    if (!subject || !maxTime) {
+      alert("Please fill all required fields!");
+      return;
+    }
+    const task: Task = {
+      subject,
+      description,
+      maxTime: parseInt(maxTime, 10),
+      audioFile,
+    };
     addOrEditTask(task);
     setSubject("");
     setDescription("");
@@ -53,7 +80,9 @@ const TaskForm = ({ addOrEditTask, editingTask, cancelEdit }) => {
           type="text"
           className="w-full p-2 border rounded"
           value={subject}
-          onChange={(e) => setSubject(e.target.value)}
+          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+            setSubject(e.target.value)
+          }
           required
         />
       </div>
@@ -62,7 +91,9 @@ const TaskForm = ({ addOrEditTask, editingTask, cancelEdit }) => {
         <textarea
           className="w-full p-2 border rounded"
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
+            setDescription(e.target.value)
+          }
         />
       </div>
       <div className="mb-4">
@@ -73,7 +104,9 @@ const TaskForm = ({ addOrEditTask, editingTask, cancelEdit }) => {
           type="number"
           className="w-full p-2 border rounded"
           value={maxTime}
-          onChange={(e) => setMaxTime(e.target.value)}
+          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+            setMaxTime(e.target.value)
+          }
           required
         />
       </div>
@@ -84,13 +117,15 @@ const TaskForm = ({ addOrEditTask, editingTask, cancelEdit }) => {
         <input
           type="file"
           accept="audio/*"
-          onChange={(e) => setAudioFile(e.target.files[0])}
+          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+            setAudioFile(e.target.files ? e.target.files[0] : null)
+          }
         />
       </div>
       <div className="flex items-center space-x-4">
         <button
           type="submit"
-          className={`relative inline-flex items-center justify-center font-semibold px-4 py-2  text-white bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg shadow-lg group hover:bg-gradient-to-r hover:from-purple-700 to-blue-700`}
+          className="relative inline-flex items-center justify-center font-semibold px-4 py-2 text-white bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg shadow-lg group hover:bg-gradient-to-r hover:from-purple-700 hover:to-blue-700"
         >
           <span className="absolute inset-0 transition-transform duration-300 rounded-lg bg-gradient-to-r from-purple-700 to-blue-700 group-hover:scale-100 group-hover:opacity-90"></span>
           <span className="relative z-10">
@@ -101,7 +136,10 @@ const TaskForm = ({ addOrEditTask, editingTask, cancelEdit }) => {
           <button
             type="button"
             onClick={handleCancelEdit}
-            className=" inset-0 transition-transform duration-300 scale-95 rounded-lg bg-gradient-to-r from-gray-700 to-orange-400 text-white px-4 py-2 rounded hover:bg-gray-600"
+            className="inset-0
+
+Ftme Kazemi, [1/25/2025 11:44 PM]
+transition-transform duration-300 scale-95 rounded-lg bg-gradient-to-r from-gray-700 to-orange-400 text-white px-4 py-2 hover:bg-gray-600"
           >
             Cancel
           </button>

@@ -1,18 +1,40 @@
 import { useState } from "react";
 
-const TaskList = ({
+// تعریف نوع برای تسک
+interface Task {
+  createdAt: string;
+  subject: string;
+  description?: string;
+  maxTime: number;
+  remainingTime: number;
+  audioFile?: File | null;
+  isCompleted: boolean;
+}
+
+// تعریف نوع برای props کامپوننت
+interface TaskListProps {
+  tasks: Task[];
+  editTask: (task: Task) => void;
+  deleteTask: (createdAt: string) => void;
+  selectedTask: string | null;
+  onTaskSelect: (createdAt: string) => void;
+}
+
+const TaskList: React.FC<TaskListProps> = ({
   tasks,
   editTask,
   deleteTask,
   selectedTask,
   onTaskSelect,
 }) => {
-  const [activeTab, setActiveTab] = useState("all");
-  const [playingTask, setPlayingTask] = useState(null);
-  const [audio, setAudio] = useState(null);
-  const [audioCurrentTime, setAudioCurrentTime] = useState(0); // موقعیت فعلی صدا
+  const [activeTab, setActiveTab] = useState<"all" | "expired" | "active">(
+    "all"
+  );
+  const [playingTask, setPlayingTask] = useState<string | null>(null);
+  const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
+  const [audioCurrentTime, setAudioCurrentTime] = useState<number>(0);
 
-  const handlePlayPauseAudio = (task) => {
+  const handlePlayPauseAudio = (task: Task) => {
     if (task.remainingTime === 0) {
       alert("You cannot play audio for an expired task!");
       return;
@@ -20,12 +42,14 @@ const TaskList = ({
 
     if (playingTask === task.createdAt) {
       // اگر در حال پخش است، صدا را متوقف کرده و موقعیت ذخیره می‌کنیم
-      audio.pause();
-      setAudioCurrentTime(audio.currentTime);
+      audio?.pause();
+      setAudioCurrentTime(audio?.currentTime || 0);
       setPlayingTask(null);
     } else {
-      if (audio) audio.pause(); // توقف صدای قبلی
-      const audioURL = URL.createObjectURL(task.audioFile);
+      audio?.pause(); // توقف صدای قبلی
+      const audioURL = task.audioFile
+        ? URL.createObjectURL(task.audioFile)
+        : "";
       const newAudio = new Audio(audioURL);
       newAudio.currentTime = audioCurrentTime; // شروع از موقعیت ذخیره‌شده
       setAudio(newAudio);
@@ -38,7 +62,7 @@ const TaskList = ({
     }
   };
 
-  const handleEditClick = (task) => {
+  const handleEditClick = (task: Task) => {
     if (task.remainingTime === 0) {
       alert("You cannot edit an expired task!");
       return;
@@ -46,11 +70,11 @@ const TaskList = ({
     editTask(task);
   };
 
-  const handleTaskClick = (task) => {
+  const handleTaskClick = (task: Task) => {
     onTaskSelect(task.createdAt);
   };
 
-  const handleStatusChange = (task) => {
+  const handleStatusChange = (task: Task) => {
     task.isCompleted = !task.isCompleted;
   };
 
@@ -108,6 +132,7 @@ const TaskList = ({
           {filteredTasks.map((task) => {
             const isSelected = selectedTask === task.createdAt;
             const isExpired = task.remainingTime === 0;
+
             return (
               <li
                 key={task.createdAt}
