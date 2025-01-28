@@ -1,25 +1,8 @@
 import { useState, useEffect, FormEvent, ChangeEvent } from "react";
+import { useTaskContext, Task } from "../../context/TaskContext";
 
-
-interface Task {
-  subject: string;
-  description: string;
-  maxTime: number;
-  audioFile: File | null;
-}
-
-
-interface TaskFormProps {
-  addOrEditTask: (task: Task) => void;
-  editingTask: Task | null;
-  cancelEdit: () => void;
-}
-
-const TaskForm: React.FC<TaskFormProps> = ({
-  addOrEditTask,
-  editingTask,
-  cancelEdit,
-}) => {
+const TaskForm: React.FC = () => {
+  const { addOrEditTask, editingTask, cancelEdit } = useTaskContext();
   const [subject, setSubject] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [maxTime, setMaxTime] = useState<string>("");
@@ -39,6 +22,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
     }
   }, [editingTask]);
 
+  // if editing canceled all state be ""
   const handleCancelEdit = () => {
     setSubject("");
     setDescription("");
@@ -49,6 +33,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+    // require these two fields
     if (!subject || !maxTime) {
       alert("Please fill all required fields!");
       return;
@@ -56,8 +41,14 @@ const TaskForm: React.FC<TaskFormProps> = ({
     const task: Task = {
       subject,
       description,
-      maxTime: parseInt(maxTime, 10),
+      maxTime: parseInt(maxTime),
       audioFile,
+      createdAt: Date.now(),
+      isPlaying: false,
+      isCompleted: false,
+      status: "pending", // default status
+      timeRemaining: parseInt(maxTime),
+      isExpired: false,
     };
     addOrEditTask(task);
     setSubject("");
@@ -136,10 +127,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
           <button
             type="button"
             onClick={handleCancelEdit}
-            className="inset-0
-
-Ftme Kazemi, [1/25/2025 11:44 PM]
-transition-transform duration-300 scale-95 rounded-lg bg-gradient-to-r from-gray-700 to-orange-400 text-white px-4 py-2 hover:bg-gray-600"
+            className="transition-transform duration-300 scale-95 rounded-lg bg-gradient-to-r from-gray-700 to-orange-400 text-white px-4 py-2 hover:bg-gray-600"
           >
             Cancel
           </button>
